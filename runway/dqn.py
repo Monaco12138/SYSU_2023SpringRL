@@ -13,7 +13,7 @@ class ReplayBuffer:
     def __init__(self, capacity):
         self.buffer = collections.deque(maxlen=capacity)  # 队列,先进先出
 
-    def add(self, state, action, reward, next_state, done):  # 将数据加入buffer
+    def add(self, state, action, reward, next_state, done):  # 将数据加入buffer, (s_t, a_t, r_t, s_t+1)
         self.buffer.append((state, action, reward, next_state, done))
 
     def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
@@ -86,6 +86,8 @@ class DQN:
         # dones: [64, 1]
     
         q_values = self.q_net(states).gather(1, actions)  # Q值
+        # q_net out: [64, 2]
+
         #q_values = self.q_net(states)[ actions ]
         # 根据 actions 值来选取 QNet 的输出动作actions_out = actions_out[ actions ]
         # print("######")
@@ -96,7 +98,9 @@ class DQN:
 
         # 下个状态的最大Q值
         max_next_q_values = self.target_q_net(next_states).max(1)[0].view(
-            -1, 1)
+            -1, 1) #[64, 1]
+        #print( max_next_q_values.shape , max_next_q_values )
+
         q_targets = rewards + self.gamma * max_next_q_values * (1 - dones
                                                                 )  # TD误差目标
         dqn_loss = torch.mean(F.mse_loss(q_values, q_targets))  # 均方误差损失函数
