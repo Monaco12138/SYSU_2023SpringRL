@@ -65,8 +65,8 @@ class Agents:
         self.agents =[agent1, agent2, agent3]
 
     def act(self, obs):
-        torch_obs = [Variable(torch.Tensor(obs[i]).view(1, -1), requires_grad=False)
-                     for i in range(N_AGENT)]
+        torch_obs = [ Variable(torch.Tensor(obs[i]).view(1, -1), requires_grad=False)
+                     for i in range(N_AGENT) ]
         actions = []
         for i in range(N_AGENT):
             action = self.agents[i](torch_obs[i]).argmax()

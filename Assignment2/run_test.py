@@ -24,8 +24,10 @@ def run(config):
             calc_start = time.time()
 
             actions = agents.act(obs)
-            print("obs:", obs )
-            print("actions:", actions)
+            
+            #obs: 3*(18,)
+            #actions 3*(5,)
+            
             obs, rewards, dones, infos = env.step(actions)
             episode_reward += np.array(rewards).sum()
             calc_end = time.time()
