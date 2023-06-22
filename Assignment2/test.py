@@ -1,8 +1,11 @@
 import numpy as np
 
-act = np.array( 4 )
+act = np.zeros( 4 )
+print( act )
 
-y = np.eye( 5 )#[act]
 
-print(y)
-print( y[act])
+rew = np.array([-1,-2,-3, -5])
+
+act += rew
+
+print( act )

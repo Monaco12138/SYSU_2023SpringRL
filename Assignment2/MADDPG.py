@@ -192,18 +192,32 @@ maddpg = MADDPG(env, device, actor_lr, critic_lr, hidden_dim, state_dims,
 
 
 
-def evaluate(env_id, maddpg, n_episode=10, episode_length=25):
+def evaluate(env_id, maddpg, n_episode=100, episode_length=25):
     # 对学习的策略进行评估,此时不会进行探索
-    env = make_env(env_id)
+    env = make_env(env_id, discrete_action=True )
     returns = np.zeros(len(env.agents))
+
+    total_reward = 0.
     for _ in range(n_episode):
+        
+        episode_reward = 0.
         obs = env.reset()
         for t_i in range(episode_length):
             actions = maddpg.take_action(obs, explore=False)
+
+            #print( actions )
             obs, rew, done, info = env.step(actions)
+
+            #print( obs[0].shape, rew[0].shape)
+
             rew = np.array(rew)
+            #print( rew )
             returns += rew / n_episode
-    return returns.tolist()
+            episode_reward += np.array(rew).sum()
+        
+        total_reward += episode_reward/episode_length
+
+    return returns.tolist(), total_reward / n_episode
 
 
 return_list = []  # 记录每一轮的回报（return）
@@ -234,7 +248,9 @@ for i_episode in range(num_episodes):
             for a_i in range(len(env.agents)):
                 maddpg.update(sample, a_i)
             maddpg.update_all_targets()
+
     if (i_episode + 1) % 100 == 0:
-        ep_returns = evaluate(env_id, maddpg, n_episode=100)
+        ep_returns, average_reward = evaluate(env_id, maddpg, n_episode=100)
         return_list.append(ep_returns)
-        print(f"Episode: {i_episode+1}, {ep_returns}")
+
+        print(f"Episode: {i_episode+1}, {ep_returns}, {average_reward}")

@@ -22,21 +22,22 @@ def run(config):
         episode_reward = 0.
         for t_i in range(config.episode_length):
             calc_start = time.time()
-
+            
             actions = agents.act(obs)
             
             #obs: 3*(18,)
             #actions 3*(5,)
-            
+            print( actions )
             obs, rewards, dones, infos = env.step(actions)
             episode_reward += np.array(rewards).sum()
             calc_end = time.time()
             elapsed = (calc_end - calc_start) * 1000.0
             # the elapsed should not exceed 10ms per step
-            print("Elapsed %f ms" % (elapsed))
+            #print("Elapsed %f ms" % (elapsed))
             # env.render('human')
         total_reward += episode_reward/config.episode_length
         print("Episode reward: %.2f" % (episode_reward/config.episode_length))
+        
     print("Mean reward of %d episodes: %.2f" % (config.n_episodes, total_reward/config.n_episodes))
 
     env.close()
