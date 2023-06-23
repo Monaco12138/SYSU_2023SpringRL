@@ -1,5 +1,7 @@
 .idea
 .DS_Store
 *.pth
-.pyc
-Assignment2/log/
+*.pyc
+*.mp4
+*/photo/
+*/log/
