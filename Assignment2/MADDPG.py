@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import random
 import utils.rl_utils as rl_utils
 from utils.make_env import make_env
+from tensorboardX import SummaryWriter
+import os
 
 def onehot_from_logits(logits, eps=0.01):
     ''' 生成最优动作的独热（one-hot）形式 '''
@@ -159,9 +161,16 @@ class MADDPG:
             agt.soft_update(agt.actor, agt.target_actor, self.tau)
             agt.soft_update(agt.critic, agt.target_critic, self.tau)
 
-
+    def save_parameters( self,  save_name ):
+        for i in range( len(self.agents) ):
+            torch.save( self.agents[i].actor.state_dict(),  os.path.join( './model', '{}_agent{}.pth'.format(save_name, i) ) )
+    
+    def load_parameters( self, save_name ):
+        for i in range( len(self.agents) ):
+            self.agents[i].actor.load_state_dict( torch.load(os.path.join( './model', '{}_agent{}.pth'.format(save_name, i)) ) )
+            
 #-- params --#
-num_episodes = 5000
+num_episodes = 50000
 episode_length = 25  # 每条序列的最大长度
 buffer_size = 100000
 hidden_dim = 64
@@ -190,6 +199,10 @@ critic_input_dim = sum(state_dims) + sum(action_dims)
 maddpg = MADDPG(env, device, actor_lr, critic_lr, hidden_dim, state_dims,
                 action_dims, critic_input_dim, gamma, tau)
 
+#torch.save( maddpg.state_dict(), './model/maddpg_init.pth' )
+maddpg.save_parameters( 'maddpg_init' )
+#maddpg.load_parameters( 'maddpg_init' )
+writer = SummaryWriter('log')
 
 
 def evaluate(env_id, maddpg, n_episode=100, episode_length=25):
@@ -218,6 +231,12 @@ def evaluate(env_id, maddpg, n_episode=100, episode_length=25):
         total_reward += episode_reward/episode_length
 
     return returns.tolist(), total_reward / n_episode
+
+
+def test_parameters():
+    _, average_reward = evaluate(env_id, maddpg, n_episode=100)
+    print( average_reward )
+
 
 
 return_list = []  # 记录每一轮的回报（return）
@@ -253,4 +272,9 @@ for i_episode in range(num_episodes):
         ep_returns, average_reward = evaluate(env_id, maddpg, n_episode=100)
         return_list.append(ep_returns)
 
+        writer.add_scalar( 'Reward', average_reward, i_episode )
         print(f"Episode: {i_episode+1}, {ep_returns}, {average_reward}")
+    
+    if (i_episode + 1) % 1000 == 0:
+        #torch.save( maddpg.state_dict(), './model/maddpg_check{}.pth'.format(i_episode+1) )
+        maddpg.save_parameters( 'maddpg_check{}'.format(i_episode+1) )
