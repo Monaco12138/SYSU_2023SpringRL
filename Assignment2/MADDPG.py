@@ -163,14 +163,14 @@ class MADDPG:
 
     def save_parameters( self,  save_name ):
         for i in range( len(self.agents) ):
-            torch.save( self.agents[i].actor.state_dict(),  os.path.join( './model', '{}_agent{}.pth'.format(save_name, i) ) )
+            torch.save( self.agents[i].actor.state_dict(),  os.path.join( './model2', '{}_agent{}.pth'.format(save_name, i) ) )
     
     def load_parameters( self, save_name ):
         for i in range( len(self.agents) ):
-            self.agents[i].actor.load_state_dict( torch.load(os.path.join( './model', '{}_agent{}.pth'.format(save_name, i)) ) )
+            self.agents[i].actor.load_state_dict( torch.load(os.path.join( './model2', '{}_agent{}.pth'.format(save_name, i)) ) )
             
 #-- params --#
-num_episodes = 50000
+num_episodes = 50000 * 4
 episode_length = 25  # 每条序列的最大长度
 buffer_size = 100000
 hidden_dim = 64
@@ -202,7 +202,7 @@ maddpg = MADDPG(env, device, actor_lr, critic_lr, hidden_dim, state_dims,
 #torch.save( maddpg.state_dict(), './model/maddpg_init.pth' )
 maddpg.save_parameters( 'maddpg_init' )
 #maddpg.load_parameters( 'maddpg_init' )
-writer = SummaryWriter('log')
+writer = SummaryWriter('log2')
 
 
 def evaluate(env_id, maddpg, n_episode=100, episode_length=25):

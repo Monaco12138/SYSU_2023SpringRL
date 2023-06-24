@@ -9,15 +9,15 @@ from agents.random.submission import Agents as RandomSampleAgents
 from agents.random_network.submission import Agents as RandomNetworkAgents
 from agents.MADDPG.submission import Agents as MADDPG
 import os
+from tensorboardX import SummaryWriter
 
-def run(config):
+def run(config ):
     env = make_env(config.env_id, discrete_action=True)
 
     # TODO: replace with you own agent model
     #agents = RandomNetworkAgents(env.observation_space[0].shape[0], env.action_space[0].n)
     #agents = RandomSampleAgents()
     agents = MADDPG()
-    agents.load_parameters( 'maddpg_check50000' )
 
     total_reward = 0.
     
@@ -33,25 +33,27 @@ def run(config):
         episode_reward = 0.
         for t_i in range(config.episode_length):
             calc_start = time.time()
-            
             actions = agents.act(obs)
             
             #obs: 3*(18,)
             #actions 3*(5,)
-            #print( actions )
             obs, rewards, dones, infos = env.step(actions)
             episode_reward += np.array(rewards).sum()
             calc_end = time.time()
             elapsed = (calc_end - calc_start) * 1000.0
 
             # the elapsed should not exceed 10ms per step
-            print("Elapsed %f ms" % (elapsed))
+            #print("Elapsed %f ms" % (elapsed))
+            #writer.add_scalar( 'Elapsed running time', elapsed, ep_i * config.n_episodes + t_i )
 
             # add render result
             trace_list.append( Image.fromarray( env.render('rgb_array')[0] ) )
+
         total_reward += episode_reward/config.episode_length
         print("Episode reward: %.2f" % (episode_reward/config.episode_length))
 
+        #writer.add_scalar( 'Reward', episode_reward/config.episode_length, ep_i )
+        
         img_list.append( trace_list )
         
     print("Mean reward of %d episodes: %.2f" % (config.n_episodes, total_reward/config.n_episodes))
@@ -68,13 +70,16 @@ if __name__ == '__main__':
     parser.add_argument("--episode_length", default=25, type=int)
     config = parser.parse_args()
 
-    img_list = run(config)
+    #writer = SummaryWriter('result')
+
+    img_list = run(config )
+
     idx = 0
-    for i in range( config.n_episodes ):
+    for i in range( config.n_episodes // 10 ):
         for j in range( len(img_list[i]) ):
             img = img_list[i][j]
 
-            img.save('./photo/img_{}.png'.format( idx ) )
+            img.save('./photo2/img_{}.png'.format( idx ) )
             idx += 1
     
 

@@ -80,13 +80,17 @@ class Agents:
     def __init__( self, agent_num=N_AGENT, hidden_dim=64 ):
         
         self.agent_num = agent_num
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu"
+
         self.agents = []
         for i in range( agent_num ):
             self.agents.append(
                 DDPG(N_OBS, N_ACTION, hidden_dim, self.device))
         
         self.critic_criterion = torch.nn.MSELoss()
+
+        self.load_parameters( 'maddpg_check200000' )
 
     def act(self, states, explore=False):
         states = [
@@ -100,5 +104,5 @@ class Agents:
 
     def load_parameters( self, save_name ):
         for i in range( len(self.agents) ):
-            self.agents[i].actor.load_state_dict( torch.load(os.path.join( '/home/ubuntu/main/2023RL/SYSU_2023SpringRL2/Assignment2/model', '{}_agent{}.pth'.format(save_name, i)) ) )
+            self.agents[i].actor.load_state_dict( torch.load(os.path.join( '../Assignment2/agents/MADDPG', '{}_agent{}.pth'.format(save_name, i)) ) )
             
